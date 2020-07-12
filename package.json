@@ -1,0 +1,10 @@
+{
+    "name": "mynodeproject",
+    "version": "0.1.0",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "nodemon": "^2.0.4"
+    }
+}
