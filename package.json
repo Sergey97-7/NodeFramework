@@ -2,9 +2,10 @@
     "name": "mynodeproject",
     "version": "0.1.0",
     "scripts": {
-        "start": "node index.js"
+        "start": "node index.js",
+        "dev": "nodemon index.js"
     },
     "dependencies": {
-        "nodemon": "^2.0.4"
+        "dotenv": "^8.2.0"
     }
 }
