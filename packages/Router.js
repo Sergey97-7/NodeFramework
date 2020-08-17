@@ -25,22 +25,24 @@ class Router {
                 return res;
             }, {});
         }
+        //TODO
+    setHandler() {}
         // TODO req,res
     getHandler(path, method) {
-        console.log('method', method)
+        // console.log('method', method)
         const values = this.routes2;
         const route = values.find(route => {
-            console.log('route', route)
-            console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
-            console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
+            // console.log('route', route)
+            // console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
+            // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
             const regResult = path.match(new RegExp(route.reg));
             return regResult ? regResult[0] === path : false;
         });
         if (!route) {
-            return 'Unknown path';
+            return `Unknown path: ${path}`;
         }
         const a = this.routes.get(route.path)
-        console.log('a', a)
+            // console.log('a', a)
         return a[method].handler(a[method].keys);
     }
     get(path, handler) {
@@ -72,8 +74,8 @@ class Router {
         const a = this.routes.get('/index/:index');
         const testPath = createRegExp(path);
         // if (a) console.log('router', a.get.params)
-        console.log('routes', this.routes)
-            // console.log('PATH', this.getHandler(path));
+        // console.log('routes', this.routes)
+        // console.log('PATH', this.getHandler(path));
         return this;
     }
     post(path, handler) {
@@ -91,6 +93,7 @@ class Router {
     patch(path, handler) {}
     options(path, handler) {}
     head(path, handler) {}
+    all() {}
 }
 
 function createRegExp(path) {

@@ -5,6 +5,7 @@ const app = require('./app');
 const configuration = fs.readFileSync('./conf/server.json');
 const server = http.createServer(app);
 const indexRouter = require('./routes/index');
+const userRoutes = require('./routes/user');
 //TODO авторизация
 //TODO безопасность
 //TODO handle errors
