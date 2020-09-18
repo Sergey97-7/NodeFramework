@@ -12,54 +12,62 @@ class App {
     pathGroups = [];
     static Router = Router;
     rootRouter = new Router()
+    defaultRouter = null
     useRouter(path, router) {
         //setHandler() для рут роутера?
-        this.rootRouter.all(path, router)
+        if (this.defaultRouter === null) {
+            this.defaultRouter = new Router();
+        }
+        if (path.trim() === '/') {
+            this.defaultRouter.root(path, router);
+        } else {
+            this.rootRouter.root(path, router);
+        }
     }
     handlePath(path, method) {
-        const router = this.rootRouter.getHandler(path);
-        console.log('rouTER', router)
-        if (router) {
-            return router.getHandler(path, method);
-        } else {
-            return `Unknown path: ${path}`;
+        const defaultRouter = this.defaultRouter.getRouter('/');
+        const router = this.rootRouter.getRouter(path);
+        let defaultRouterHandledValue;
+        if (defaultRouter && typeof defaultRouter === 'object' && defaultRouter.router instanceof Router) {
+            defaultRouterHandledValue = defaultRouter.router.getHandler(path, method);
+            if (!defaultRouterHandledValue.startsWith('Unknown path')) {
+                return defaultRouterHandledValue
+            }
         }
+        //TODO хардкод, поправить
+        if (router && typeof router === 'object' && router.router instanceof Router) {
+            let cuttedPath = path.split(router.pathPiece)[1];
+            //TODO поправить
+            if (!cuttedPath.startsWith('/')) cuttedPath = '/' + cuttedPath;
+            return router.router.getHandler(cuttedPath.trim().length === 0 ? '/' : cuttedPath.trim(), method);
+        } else {
+            return `appUnknown path: ${path}`;
+        }
+
     }
     logger() {}
     routing() {}
-
-    // handleRoute(path, method) {
-    //     const router = this.pathGroups.find(pathGroup => {
-    //         console.log('path', path)
-    //         console.log('pathGroup', pathGroup)
-    //         return path.startsWith(pathGroup)
-    //     });
-    //     console.log('router', router);
-    //     // console.log('this.routers', this.routers);
-    //     if (router) {
-    //         return this.routers.get(router).getHandler(path, method);
-    //     } else {
-    //         return `Unknown path: ${path}`;
-    //     }
-    // }
-    // useRouter(path, router) {
-    //     this.routers.set(path, router);
-    //     this.pathGroups.push(path);
-    //     return this;
-    // }
     useMiddleWare() {}
 }
 const cApp = new App();
+
 cApp.useRouter('/', indexRoutes)
 cApp.useRouter('/users', userRoutes)
-const a = cApp.handlePath('/', 'get')
-const b = cApp.handlePath('/users', 'get')
-const c = cApp.handlePath('/usa', 'get')
 
-console.log('new App', new App())
+const a = cApp.handlePath('/', 'get')
+const b = cApp.handlePath('/index', 'get')
+const c = cApp.handlePath('/index/abc', 'get')
+const d = cApp.handlePath('/index/index', 'get')
+const f = cApp.handlePath('/users', 'get')
+
+const e = cApp.handlePath('/users/user', 'get');
+
 console.log('a', a)
 console.log('b', b)
 console.log('c', c)
+console.log('d', d)
+console.log('f', f)
+console.log('e', e)
 
 function app(req, res) {
 
@@ -89,5 +97,4 @@ function app(req, res) {
     res.write(result ? result : 'Hello World!');
     res.end();
 }
-// module.exports = app;
 module.exports = app;

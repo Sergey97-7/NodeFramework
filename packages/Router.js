@@ -1,7 +1,7 @@
 const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
 class Router {
     constructor() {
-        this.pathPrefix = '/';
+        // this.pathPrefix = '/';
         //TODO оставить один Map
         this.routes = new Map();
         this.routes2 = [];
@@ -28,6 +28,23 @@ class Router {
         //TODO
     setHandler() {}
         // TODO req,res
+
+    getRouter(path) {
+        const values = this.routes2;
+        const route = values.find(route => {
+            // console.log('route', route)
+            // console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
+            // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
+            const regResult = path.match(new RegExp(route.reg));
+            // return regResult ? regResult[0] === path : false;
+            return regResult ? path.startsWith(regResult[0]) : false;
+        });
+        if (!route) {
+            return `Unknown path: ${path}`;
+        }
+        const a = { router: this.routes.get(route.path).root.handler, pathPiece: route.path };
+        return a;
+    }
     getHandler(path, method) {
         // console.log('method', method)
         const values = this.routes2;
@@ -38,6 +55,7 @@ class Router {
             const regResult = path.match(new RegExp(route.reg));
             return regResult ? regResult[0] === path : false;
         });
+        // console.log('route, ', route)
         if (!route) {
             return `Unknown path: ${path}`;
         }
@@ -45,17 +63,38 @@ class Router {
             // console.log('a', a)
         return a[method].handler(a[method].keys);
     }
+
+    root(path, handler) {
+        //TODO убрать params из root?
+        let pathHandlers;
+        Router.checkPath(path);
+        const pathData = createRegExp(path, true);
+        const params = Router.getRouteParams(path);
+        const route = this.routes.get(path);
+        pathHandlers = route ? route : {};
+        this.routes.set(path, Object.assign(pathHandlers, {
+            root: {
+                handler,
+                params, // убрать?
+                regPath: pathData.regPath, //TODO деструктуризация
+                keys: pathData.keys,
+                path
+            },
+        }));
+        this.routes2.push({ reg: pathData.regPath, path });
+        // this.routes2.set(pathData.regPath)
+        const a = this.routes.get('/index/:index');
+        const testPath = createRegExp(path);
+        // if (a) console.log('router', a.get.params)
+        // console.log('routes', this.routes)
+        // console.log('PATH', this.getHandler(path));
+        return this;
+    }
     get(path, handler) {
         //TODO вынести проверки, параметры и тд в отдельный метод, тут только передавать тип и сеттать в this.router
         let pathHandlers;
         Router.checkPath(path);
         const pathData = createRegExp(path);
-
-        // console.log('pathData', pathData);
-        // console.log('pathData', new RegExp(createRegExp(path).regPath, 'i'));
-        // console.log('createRegExp2', createRegExp(path));
-        // console.log('PATH', path);
-        // console.log('\n\n\n')
         const params = Router.getRouteParams(path);
         const route = this.routes.get(path);
         pathHandlers = route ? route : {};
@@ -72,7 +111,7 @@ class Router {
         this.routes2.push({ reg: pathData.regPath, path });
         // this.routes2.set(pathData.regPath)
         const a = this.routes.get('/index/:index');
-        const testPath = createRegExp(path);
+        const testPath = createRegExp(path, true);
         // if (a) console.log('router', a.get.params)
         // console.log('routes', this.routes)
         // console.log('PATH', this.getHandler(path));
@@ -96,7 +135,7 @@ class Router {
     all() {}
 }
 
-function createRegExp(path) {
+function createRegExp(path, root) {
     //TODO вынести параметры регулярок в отдельное свойство (i, g) ??
     let result = { regPath: '', keys: [] }
         // let reg = '';
@@ -122,7 +161,8 @@ function createRegExp(path) {
         }
         return res;
     }, '');
-    result.regPath = regPathPrefix + result.regPath + regPathPostfix;
+    result.regPath = `${regPathPrefix}${result.regPath}${root ? '' : regPathPostfix}`;
     return result;
 }
+
 module.exports = Router;
