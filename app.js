@@ -58,16 +58,19 @@ const a = cApp.handlePath('/', 'get')
 const b = cApp.handlePath('/index', 'get')
 const c = cApp.handlePath('/index/abc', 'get')
 const d = cApp.handlePath('/index/index', 'get')
-const f = cApp.handlePath('/users', 'get')
+const d2 = cApp.handlePath('/index/super/app', 'get')
+const e = cApp.handlePath('/users', 'get')
 
-const e = cApp.handlePath('/users/user', 'get');
+const f = cApp.handlePath('/users/user', 'get');
+// const g = cApp.handlePath('/users/user', 'get');
 
 console.log('a', a)
 console.log('b', b)
 console.log('c', c)
 console.log('d', d)
-console.log('f', f)
 console.log('e', e)
+console.log('f', f)
+console.log('d2', d2)
 
 function app(req, res) {
 
@@ -77,6 +80,7 @@ function app(req, res) {
     const method = req.method.toLowerCase();
     const query = parsedUrl.query;
     const headers = req.headers;
+    let result = cApp.handlePath(path, method);
     // console.log('body', parsedUrl)
     // console.log('req', req)
     // let body = '';
@@ -92,7 +96,7 @@ function app(req, res) {
     //     console.log('body1', data)
     // })
     // console.log('body2', body)
-    let result = indexRoutes.getHandler(path, method);
+    // let result = indexRoutes.getHandler(path, method);
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.write(result ? result : 'Hello World!');
     res.end();

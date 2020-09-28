@@ -48,19 +48,25 @@ class Router {
     getHandler(path, method) {
         // console.log('method', method)
         const values = this.routes2;
+        let regResult;
         const route = values.find(route => {
             // console.log('route', route)
             // console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
             // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
-            const regResult = path.match(new RegExp(route.reg));
+            regResult = path.match(new RegExp(route.reg));
+            // console.log('123', route.reg)
+            console.log('path', path, '  ', regResult)
             return regResult ? regResult[0] === path : false;
         });
-        // console.log('route, ', route)
+        console.log('path123', route)
+            // console.log('route, ', route)
         if (!route) {
             return `Unknown path: ${path}`;
         }
         const a = this.routes.get(route.path)
-            // console.log('a', a)
+            // console.log('a123', a.get.params)
+            // console.log('a321', a.get.keys)
+            //TODO прокидывать params из regResult
         return a[method].handler(a[method].keys);
     }
 
@@ -151,7 +157,7 @@ function createRegExp(path, root) {
             // res += '[^\\/#\\?]+?';
             // res += '\\/[^/#\?]+?';
             result.keys.push({
-                name: piece.slice(2),
+                name: piece.slice(1),
 
             })
             res += '(?:\/([^\\/#\\?]+?))';
