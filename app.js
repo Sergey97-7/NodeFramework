@@ -24,12 +24,12 @@ class App {
             this.rootRouter.root(path, router);
         }
     }
-    handlePath(path, method) {
+    handlePath(path, method, query, headers) {
         const defaultRouter = this.defaultRouter.getRouter('/');
         const router = this.rootRouter.getRouter(path);
         let defaultRouterHandledValue;
         if (defaultRouter && typeof defaultRouter === 'object' && defaultRouter.router instanceof Router) {
-            defaultRouterHandledValue = defaultRouter.router.getHandler(path, method);
+            defaultRouterHandledValue = defaultRouter.router.getHandler(path, method, query, headers);
             if (!defaultRouterHandledValue.startsWith('Unknown path')) {
                 return defaultRouterHandledValue
             }
@@ -39,7 +39,7 @@ class App {
             let cuttedPath = path.split(router.pathPiece)[1];
             //TODO поправить
             if (!cuttedPath.startsWith('/')) cuttedPath = '/' + cuttedPath;
-            return router.router.getHandler(cuttedPath.trim().length === 0 ? '/' : cuttedPath.trim(), method);
+            return router.router.getHandler(cuttedPath.trim().length === 0 ? '/' : cuttedPath.trim(), method, query, headers);
         } else {
             return `appUnknown path: ${path}`;
         }
@@ -55,7 +55,7 @@ cApp.useRouter('/', indexRoutes)
 cApp.useRouter('/users', userRoutes)
 
 const a = cApp.handlePath('/', 'get')
-const b = cApp.handlePath('/index', 'get')
+const b = cApp.handlePath('/ind/sbc/p', 'get')
 const c = cApp.handlePath('/index/abc', 'get')
 const d = cApp.handlePath('/index/index', 'get')
 const d2 = cApp.handlePath('/index/super/app', 'get')
@@ -80,7 +80,8 @@ function app(req, res) {
     const method = req.method.toLowerCase();
     const query = parsedUrl.query;
     const headers = req.headers;
-    let result = cApp.handlePath(path, method);
+    //TODO сделать свой объект
+    let result = cApp.handlePath(path, method, query, headers);
     // console.log('body', parsedUrl)
     // console.log('req', req)
     // let body = '';

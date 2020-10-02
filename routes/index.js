@@ -2,22 +2,38 @@ const a = require('../packages/Router');
 const Router = new a()
     //TODO рут роут указать в самом начале
 Router
-    .get('/', () => {
-        console.log('success /');
+    .get('/', (data) => {
+        console.log('success / with params: ', data.params);
         return 'success /';
     })
-    .get('/index', () => {
-        console.log('success /index');
+    .get('/index', (data) => {
+        console.log('success /index with params: ', data.params);
         return 'success /index';
     })
-    .get('/index/:index2', (a) => {
-        console.log('success /index/:index');
-        console.log('a', a)
+    .get('/ind/.*bc/:param1', (data) => {
+        return JSON.stringify({
+            rawPath: '/ind/.*bc/:param',
+            path: data.path,
+            param: data.params.param1,
+            query: data.query,
+            headers: data.headers
+        })
+        console.log('success /index with params: ', data.params);
+        return 'success /index';
+    })
+    .get('/index/:index2', (data) => {
+        console.log('success /index/:index with params: ', data.params);
+        // console.log('a', a)
         return 'success /index/:index';
     })
-    .get('/index/:index2/:index2', (a) => {
-        console.log('success /index/:index/:index2');
-        console.log('a', a)
+    .get('/index/:index2/:index3', (data) => {
+        console.log('success /index/:index/:index2 with params: ', data.params);
+        // console.log('a', a)
+        return 'success /index/:index/:index2';
+    })
+    .get('/index/abc:index2', (data) => {
+        console.log('success /index/:index/:index2 with params: ', data.params);
+        // console.log('a', a)
         return 'success /index/:index/:index2';
     })
 module.exports = Router;

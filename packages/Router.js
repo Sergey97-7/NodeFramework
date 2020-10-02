@@ -45,7 +45,7 @@ class Router {
         const a = { router: this.routes.get(route.path).root.handler, pathPiece: route.path };
         return a;
     }
-    getHandler(path, method) {
+    getHandler(path, method, query, headers) {
         // console.log('method', method)
         const values = this.routes2;
         let regResult;
@@ -55,11 +55,11 @@ class Router {
             // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
             regResult = path.match(new RegExp(route.reg));
             // console.log('123', route.reg)
-            console.log('path', path, '  ', regResult)
+            // console.log('path', path, '  ', regResult)
             return regResult ? regResult[0] === path : false;
         });
-        console.log('path123', route)
-            // console.log('route, ', route)
+        // console.log('path123', route)
+        // console.log('route, ', route)
         if (!route) {
             return `Unknown path: ${path}`;
         }
@@ -67,7 +67,12 @@ class Router {
             // console.log('a123', a.get.params)
             // console.log('a321', a.get.keys)
             //TODO прокидывать params из regResult
-        return a[method].handler(a[method].keys);
+            // console.log('regResult', regResult.slice(1))
+            // console.log('regResult', regResult)
+            // console.log('a[method].keys', a[method].keys)
+            // console.log('keysWithValues', keysWithValues)
+        const data = { path, params: regResult.groups, query, headers }
+        return a[method].handler(data);
     }
 
     root(path, handler) {
@@ -160,14 +165,14 @@ function createRegExp(path, root) {
                 name: piece.slice(1),
 
             })
-            res += '(?:\/([^\\/#\\?]+?))';
+            res += `(?:\/(?<${piece.slice(1)}>[^\\/#\\?]+?))`;
         } else {
             // res += piece;
             res += `\\/${piece}`;
         }
         return res;
     }, '');
-    result.regPath = `${regPathPrefix}${result.regPath}${root ? '' : regPathPostfix}`;
+    result.regPath = new RegExp(`${regPathPrefix}${result.regPath}${root ? '' : regPathPostfix}`, 'i');
     return result;
 }
 
