@@ -1,10 +1,16 @@
 const a = require('../packages/Router');
+const {
+    getIndexPage
+} = require('../libs/index');
+const {
+    sendResponse,
+    sendPage
+} = require('../libs/transmitter');
 const Router = new a()
     //TODO рут роут указать в самом начале
 Router
     .get('/', (data) => {
-        console.log('success / with params: ', data.params);
-        return 'success /';
+        sendPage(data.res, getIndexPage());
     })
     .get('/index', (data) => {
         console.log('success /index with params: ', data.params);

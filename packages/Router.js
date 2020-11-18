@@ -1,11 +1,9 @@
-const httpMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
 class Router {
     constructor() {
-        // this.pathPrefix = '/';
-        //TODO оставить один Map
         this.routes = new Map();
         this.routes2 = [];
     }
+
     static checkPath(path) {
         if (typeof path !== 'string') {
             throw new Error('Path must be a string');
@@ -13,30 +11,23 @@ class Router {
         return path;
     }
     static getRouteParams(path) {
-            const pieces = path.split('/');
+        const pieces = path.split('/');
 
-            return pieces.reduce((res, piece, index) => {
-                if (piece.startsWith(':')) {
-                    //TODO исправить
-                    res[piece] = {
-                        index,
-                    }
+        return pieces.reduce((res, piece, index) => {
+            if (piece.startsWith(':')) {
+                //TODO исправить
+                res[piece] = {
+                    index,
                 }
-                return res;
-            }, {});
-        }
-        //TODO
-    setHandler() {}
-        // TODO req,res
+            }
+            return res;
+        }, {});
+    }
 
     getRouter(path) {
         const values = this.routes2;
         const route = values.find(route => {
-            // console.log('route', route)
-            // console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
-            // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
             const regResult = path.match(new RegExp(route.reg));
-            // return regResult ? regResult[0] === path : false;
             return regResult ? path.startsWith(regResult[0]) : false;
         });
         if (!route) {
@@ -45,134 +36,96 @@ class Router {
         const a = { router: this.routes.get(route.path).root.handler, pathPiece: route.path };
         return a;
     }
-    getHandler(path, method, query, headers) {
-        // console.log('method', method)
+    getHandler(path, method, query, headers, body, res, req) {
         const values = this.routes2;
         let regResult;
         const route = values.find(route => {
-            // console.log('route', route)
-            // console.log('path.match(new RegExp(route.regPath))', new RegExp(route.reg))
-            // console.log('path.match(new RegExp(route.regPath))', path.match(new RegExp(route.regPath)))
             regResult = path.match(new RegExp(route.reg));
-            // console.log('123', route.reg)
-            // console.log('path', path, '  ', regResult)
             return regResult ? regResult[0] === path : false;
         });
-        // console.log('path123', route)
-        // console.log('route, ', route)
         if (!route) {
             return `Unknown path: ${path}`;
         }
         const a = this.routes.get(route.path)
-            // console.log('a123', a.get.params)
-            // console.log('a321', a.get.keys)
-            //TODO прокидывать params из regResult
-            // console.log('regResult', regResult.slice(1))
-            // console.log('regResult', regResult)
-            // console.log('a[method].keys', a[method].keys)
-            // console.log('keysWithValues', keysWithValues)
-        const data = { path, params: regResult.groups, query, headers }
+        const data = { path, params: regResult.groups, query, headers, body, res, req }
         return a[method].handler(data);
     }
 
     root(path, handler) {
-        //TODO убрать params из root?
-        let pathHandlers;
-        Router.checkPath(path);
-        const pathData = createRegExp(path, true);
-        const params = Router.getRouteParams(path);
-        const route = this.routes.get(path);
-        pathHandlers = route ? route : {};
-        this.routes.set(path, Object.assign(pathHandlers, {
-            root: {
-                handler,
-                params, // убрать?
-                regPath: pathData.regPath, //TODO деструктуризация
-                keys: pathData.keys,
-                path
-            },
-        }));
-        this.routes2.push({ reg: pathData.regPath, path });
-        // this.routes2.set(pathData.regPath)
-        const a = this.routes.get('/index/:index');
-        const testPath = createRegExp(path);
-        // if (a) console.log('router', a.get.params)
-        // console.log('routes', this.routes)
-        // console.log('PATH', this.getHandler(path));
+        this.setHandler(path, handler, 'root')
         return this;
     }
-    get(path, handler) {
-        //TODO вынести проверки, параметры и тд в отдельный метод, тут только передавать тип и сеттать в this.router
+    setHandler(path, handler, method) {
         let pathHandlers;
         Router.checkPath(path);
-        const pathData = createRegExp(path);
+        const { regPath, keys } = createRegExp(path, method === 'root' ? true : false);
         const params = Router.getRouteParams(path);
         const route = this.routes.get(path);
         pathHandlers = route ? route : {};
         this.routes.set(path, Object.assign(pathHandlers, {
-            get: {
+            [method]: {
                 handler,
                 params, // убрать?
-                regPath: pathData.regPath, //TODO деструктуризация
-                keys: pathData.keys,
+                regPath,
+                keys,
                 path
             },
 
         }));
-        this.routes2.push({ reg: pathData.regPath, path });
-        // this.routes2.set(pathData.regPath)
-        const a = this.routes.get('/index/:index');
-        const testPath = createRegExp(path, true);
-        // if (a) console.log('router', a.get.params)
-        // console.log('routes', this.routes)
-        // console.log('PATH', this.getHandler(path));
+        this.routes2.push({ reg: regPath, path });
+    }
+    get(path, handler) {
+        this.setHandler(path, handler, 'get')
         return this;
     }
+
     post(path, handler) {
-        let pathHandlers;
-        Router.checkPath(path);
-        const route = this.routes.get(path);
-        pathHandlers = route ? route : {};
-        this.routes.set(path, Object.assign(pathHandlers, {
-            post: handler
-        }));
+        this.setHandler(path, handler, 'post')
         return this;
     }
-    put(path, handler) {}
-    delete(path, handler) {}
-    patch(path, handler) {}
-    options(path, handler) {}
-    head(path, handler) {}
+    put(path, handler) {
+        this.setHandler(path, handler, 'put')
+        return this;
+    }
+    delete(path, handler) {
+        this.setHandler(path, handler, 'delete')
+        return this;
+    }
+    patch(path, handler) {
+        this.setHandler(path, handler, 'patch')
+        return this;
+    }
+    options(path, handler) {
+        this.setHandler(path, handler, 'options')
+        return this;
+    }
+    head(path, handler) {
+        this.setHandler(path, handler, 'head')
+        return this;
+    }
     all() {}
 }
 
 function createRegExp(path, root) {
-    //TODO вынести параметры регулярок в отдельное свойство (i, g) ??
     let result = { regPath: '', keys: [] }
-        // let reg = '';
     const regPathPrefix = '^';
     const regPathPostfix = '[\\/#\\?]?$';
-
+    const regParams = 'i';
 
     const pieces = path.split('/').filter(item => item.trim() !== '');
-    //TODO мб массив, мб если нет параметров, то проще null проставить
     result.regPath = pieces.reduce((res, piece, index) => {
         if (piece.startsWith(':')) {
-            // res += '[\/#\?]';
-            // res += '[^\\/#\\?]+?';
-            // res += '\\/[^/#\?]+?';
             result.keys.push({
                 name: piece.slice(1),
 
             })
             res += `(?:\/(?<${piece.slice(1)}>[^\\/#\\?]+?))`;
         } else {
-            // res += piece;
             res += `\\/${piece}`;
         }
         return res;
     }, '');
-    result.regPath = new RegExp(`${regPathPrefix}${result.regPath}${root ? '' : regPathPostfix}`, 'i');
+    result.regPath = new RegExp(`${regPathPrefix}${result.regPath}${root ? '' : regPathPostfix}`, regParams);
     return result;
 }
 
