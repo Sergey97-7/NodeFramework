@@ -7,9 +7,11 @@ const fs = require('fs');
 const enumLogLevels = {
     debug: '1',
 }
+
+//TODO удалить рудименты (root,)
 class App {
     constructor() {}
-    routers = new Map();
+    routers = [];
     pathGroups = [];
     static Router = Router;
     rootRouter = new Router()
@@ -49,36 +51,30 @@ class App {
         });
     }
     useRouter(path, router) {
-        //setHandler() для рут роутера?
-        if (this.defaultRouter === null) {
-            this.defaultRouter = new Router();
-        }
-        if (path.trim() === '/') {
-            this.defaultRouter.root(path, router);
-        } else {
-            this.rootRouter.root(path, router);
-        }
-    }
-    handlePath(path, method, query, headers, body, res, req) {
-        const defaultRouter = this.defaultRouter.getRouter('/');
-        const router = this.rootRouter.getRouter(path);
-        let defaultRouterHandledValue;
-        if (defaultRouter && typeof defaultRouter === 'object' && defaultRouter.router instanceof Router) {
-            defaultRouterHandledValue = defaultRouter.router.getHandler(path, method, query, headers, body, res, req);
-            if (defaultRouterHandledValue && !defaultRouterHandledValue.startsWith('Unknown path')) {
-                return defaultRouterHandledValue
+            //setHandler() для рут роутера?
+            router.addPathPiece(path);
+            this.routers.push(router);
+            if (this.defaultRouter === null) {
+                this.defaultRouter = new Router();
+            }
+            if (path.trim() === '/') {
+                this.defaultRouter.root(path, router);
+            } else {
+                this.rootRouter.root(path, router);
             }
         }
-        //TODO хардкод, поправить
-        if (router && typeof router === 'object' && router.router instanceof Router) {
-            let cuttedPath = path.split(router.pathPiece)[1];
-            //TODO поправить
-            if (!cuttedPath.startsWith('/')) cuttedPath = '/' + cuttedPath;
-            return router.router.getHandler(cuttedPath.trim().length === 0 ? '/' : cuttedPath.trim(), method, query, headers, body, res, req);
-        } else {
-            return `appUnknown path: ${path}`;
-        }
+        //TODO возвращать ответ? если не нашлось, то дефолтный ответ
+        // переделать unknown path с роутера, сделать единый 404 с html страницей
+    handlePath(path, method, query, headers, body, res, req) {
+        let result = null;
+        this.routers.forEach(router => {
+            let a = router.getHandler(path, method, query, headers, body, res, req)
+            if (a) {
+                result = a;
+            }
 
+        })
+        return result;
     }
     logger() {}
     routing() {}
