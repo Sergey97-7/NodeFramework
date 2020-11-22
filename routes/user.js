@@ -14,7 +14,7 @@ Router
         console.log('success get user /');
         return 'success get user /';
     })
-    .get('/users1', (data) => {
+    .get('/users', (data) => {
         console.log('success get user /user');
         sendResponse(data.res, getUsers())
         return 'success get user /user';

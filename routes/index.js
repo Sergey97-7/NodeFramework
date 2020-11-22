@@ -14,6 +14,7 @@ Router
     })
     .get('/index', (data) => {
         console.log('success /index with params: ', data.params);
+        sendResponse(data.res, 'abc')
         return 'success /index';
     })
     .get('/ind/.*bc/:param1', (data) => {

@@ -8,14 +8,9 @@ const enumLogLevels = {
     debug: '1',
 }
 
-//TODO удалить рудименты (root,)
 class App {
     constructor() {}
     routers = [];
-    pathGroups = [];
-    static Router = Router;
-    rootRouter = new Router()
-    defaultRouter = null
 
     getReqParams(req) {
         const parsedUrl = url.parse(req.url, true);
@@ -45,33 +40,24 @@ class App {
             //TODO сформировать для handlePath объект, включить туда и req.
             console.log('body', body)
             result = this.handlePath(path, method, query, headers, body, res, req);
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.write(result ? result : 'Hello World!');
+            res.writeHead(404, { 'Content-Type': 'text/json' });
+            res.write(JSON.stringify({ error: `404 Unknown path: '${path}'` }));
             res.end();
         });
     }
     useRouter(path, router) {
-            //setHandler() для рут роутера?
             router.addPathPiece(path);
             this.routers.push(router);
-            if (this.defaultRouter === null) {
-                this.defaultRouter = new Router();
-            }
-            if (path.trim() === '/') {
-                this.defaultRouter.root(path, router);
-            } else {
-                this.rootRouter.root(path, router);
-            }
         }
         //TODO возвращать ответ? если не нашлось, то дефолтный ответ
         // переделать unknown path с роутера, сделать единый 404 с html страницей
     handlePath(path, method, query, headers, body, res, req) {
         let result = null;
         this.routers.forEach(router => {
-            let a = router.getHandler(path, method, query, headers, body, res, req)
-            if (a) {
-                result = a;
-            }
+            const result = router.getHandler(path, method, query, headers, body, res, req);
+            // if (handlerResult) {
+            //     result = handlerResult;
+            // }
 
         })
         return result;
